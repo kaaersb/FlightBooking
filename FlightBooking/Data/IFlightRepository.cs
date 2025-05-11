@@ -7,6 +7,6 @@ namespace FlightBooking.Core.Data
     {
         Flight? GetById(Guid flightId);
         IEnumerable<Flight> GetAll();
-        IEnumerable<Flight> Search();
+        Task<IEnumerable<Flight>> SearchAsync(string origin, string destination, DateTime departureDate, DateTime? returnDate = null);
     }
 }

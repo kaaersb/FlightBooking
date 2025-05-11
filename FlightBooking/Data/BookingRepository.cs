@@ -6,11 +6,11 @@ namespace FlightBooking.Core.Data
 {
     public class BookingRepository : IBookingRepository
     {
-        private readonly string _conn;
+        private readonly string _connectionString;
 
         public BookingRepository(string connectionString)
         {
-            _conn = connectionString;
+            _connectionString = connectionString;
         }
 
         public void Add(Booking booking)
@@ -19,7 +19,7 @@ namespace FlightBooking.Core.Data
                 INSERT INTO Bookings (BookingId, UserId)
                 VALUES (@BookingId, @UserId)";
 
-            using var conn = new SqlConnection(_conn);
+            using var conn = new SqlConnection(_connectionString);
             conn.Open();
 
             using var cmd = new SqlCommand(sql, conn);
@@ -37,7 +37,7 @@ namespace FlightBooking.Core.Data
                   JOIN Users u ON b.UserId = u.UserId
                  WHERE b.BookingId = @BookingId";
 
-            using var conn = new SqlConnection(_conn);
+            using var conn = new SqlConnection(_connectionString);
             conn.Open();
             using var cmd = new SqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@BookingId", bookingId);
@@ -66,7 +66,7 @@ namespace FlightBooking.Core.Data
                   FROM Bookings
                  WHERE UserId = @UserId";
 
-            using var conn = new SqlConnection(_conn);
+            using var conn = new SqlConnection(_connectionString);
             conn.Open();
             using var cmd = new SqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@UserId", userId);
@@ -85,7 +85,7 @@ namespace FlightBooking.Core.Data
         public IEnumerable<Booking> GetAll()
         {
             const string sql = "SELECT BookingId, UserId FROM Bookings";
-            using var conn = new SqlConnection(_conn);
+            using var conn = new SqlConnection(_connectionString);
             conn.Open();
             using var cmd = new SqlCommand(sql, conn);
             using var r = cmd.ExecuteReader();
@@ -102,7 +102,7 @@ namespace FlightBooking.Core.Data
         public void Delete(Guid bookingId)
         {
             const string sql = "DELETE FROM Bookings WHERE BookingId = @BookingId";
-            using var conn = new SqlConnection(_conn);
+            using var conn = new SqlConnection(_connectionString);
             conn.Open();
             using var cmd = new SqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@BookingId", bookingId);

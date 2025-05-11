@@ -1,5 +1,7 @@
 ﻿using System;
+using System;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Data.SqlClient;
 using FlightBooking.Core.Data;
 using FlightBooking.Core.Models;
 
@@ -12,98 +14,122 @@ class Program
             .SetBasePath(AppContext.BaseDirectory)
             .AddJsonFile("appsettings.json", optional: false)
             .Build();
-        var connString = config.GetConnectionString("Default");
+        var connectionString = config.GetConnectionString("Default");
 
-        // Opret repository
-        IUserRepository repo = new UserRepository(connString);
+        Console.WriteLine(connectionString);
 
-        // Create
-        /*
-        var newUser = new User
+        // Opret repositories
+        IUserRepository userRepo = new UserRepository(connectionString);
+        IFlightRepository flightRepo = new FlightRepository(connectionString);
+        IBookingRepository bookingRepo = new BookingRepository(connectionString);
+
+        Console.WriteLine("=== USER CRUD ===");
+        // CREATE
+        var user = new User
         {
             UserId = Guid.NewGuid(),
-            Name = "TestBruger",
-            Email = "test@eksempel.dk",
-            Password = "hemmelig"
+            Name = "Alice",
+            Email = "alice@example.com",
+            Password = "secret"
         };
-        repo.Add(newUser);
-        Console.WriteLine($"Bruger oprettet med ID: {newUser.UserId}");
+        userRepo.Add(user);
+        Console.WriteLine($"Created User: {user.UserId}");
 
-        // Find bruger med ID
-        var hentet = repo.GetById(newUser.UserId);
-        if (hentet != null)
-        {
-            Console.WriteLine($"Hentet fra DB: {hentet.Name}, {hentet.Email}");
-        }
+        // READ
+        var fetchedUser = userRepo.GetById(user.UserId);
+        Console.WriteLine($"Read User: {fetchedUser?.Name}, {fetchedUser?.Email}");
 
-        // List alle brugere
-        Console.WriteLine("\nAlle brugere:");
-        foreach (var u in repo.GetAll())
-        {
+        // LIST
+        Console.WriteLine("All Users:");
+        foreach (var u in userRepo.GetAll())
             Console.WriteLine($" - {u.UserId}: {u.Name} ({u.Email})");
-        }
 
-        
+        // UPDATE
+        user.Name = "Alice Updated";
+        userRepo.Update(user);
+        Console.WriteLine($"Updated User: {user.UserId}");
 
-        User user = new User
-        {
-            UserId = Guid.NewGuid(),
-            Name = "Nyt navn",
-            Email = "nyemail@email.dk",
-            Password = "hemmelig2"
-        };
-
-        repo.Add(user);
-        
-        // Opdater bruger
-        User læst = repo.GetById(user.UserId);
-        læst.Name = "Nyt navn 2";
-        repo.Update(læst);
-
-        Console.WriteLine("\nAlle brugere:");
-        foreach (var u in repo.GetAll())
-        {
+        // VERIFY UPDATE
+        Console.WriteLine("All Users After Update:");
+        foreach (var u in userRepo.GetAll())
             Console.WriteLine($" - {u.UserId}: {u.Name} ({u.Email})");
-        }
-        
-        // Slet bruger
-        repo.Delete(Guid.Parse(// BRUGER ID));
 
-        */
+        // DELETE
+        userRepo.Delete(user.UserId);
+        Console.WriteLine($"Deleted User: {user.UserId}");
+
+        // VERIFY DELETE
+        Console.WriteLine("All Users After Delete:");
+        foreach (var u in userRepo.GetAll())
+            Console.WriteLine($" - {u.UserId}: {u.Name} ({u.Email})");
 
 
-        // Opret booking-repo
-        IBookingRepository bookingRepo = new BookingRepository(connString);
-        User newUser = new User
+        Console.WriteLine("\n=== FLIGHT CRUD ===");
+        // CREATE
+        var flight = new Flight
+        {
+            FlightId = Guid.NewGuid(),
+            FlightNumber = "SK123",
+            Origin = "CPH",
+            Destination = "LHR",
+            DepartureUtc = DateTime.UtcNow.AddDays(1).AddHours(9),
+            ArrivalUtc = DateTime.UtcNow.AddDays(1).AddHours(11),
+            Price = 199.50m,
+            Airline = "SAS"
+        };
+        //flightRepo.Add(flight);
+        Console.WriteLine($"Created Flight: {flight.FlightId}");
+
+        // (Hvis du har en GetById på flights:)
+        // var fetchedFlight = flightRepo.GetById(flight.FlightId);
+        // Console.WriteLine($"Read Flight: {fetchedFlight?.FlightNumber} from {fetchedFlight?.Origin} to {fetchedFlight?.Destination}");
+
+        // LIST (via Search eller GetAll afhængig af din implementering)
+        //Console.WriteLine("All Flights (Search CPH→LHR):");
+        //foreach (var f in flightRepo.Search("CPH", "LHR", DateTime.UtcNow.AddDays(1)))
+        //    Console.WriteLine($" - {f.FlightId}: {f.FlightNumber} at {f.DepartureUtc} → {f.ArrivalUtc} ({f.Price} EUR)");
+
+        // DELETE
+        // flightRepo.Delete(flight.FlightId);
+        // Console.WriteLine($"Deleted Flight: {flight.FlightId}");
+
+
+        Console.WriteLine("\n=== BOOKING CRUD ===");
+        // Sørg for at have en gyldig userId og flightId; vi genopretter en test‐user
+        var bookUser = new User
         {
             UserId = Guid.NewGuid(),
-            Name = "Test",
-            Email = "email@email.dk",
-            Password = "password"
+            Name = "Bob",
+            Email = "bob@example.com",
+            Password = "pass"
         };
+        userRepo.Add(bookUser);
 
-        repo.Add(newUser);
-
-        // Eksempel: Create
         var booking = new Booking
         {
             BookingId = Guid.NewGuid(),
-            UserId = newUser.UserId
+            UserId = bookUser.UserId,
+            FlightId = flight.FlightId
         };
         bookingRepo.Add(booking);
-        Console.WriteLine($"Booking oprettet: {booking.BookingId} for user {booking.UserId}");
+        Console.WriteLine($"Created Booking: {booking.BookingId} for User {booking.UserId}");
 
-        // Eksempel: Read
-        var hentetBooking = bookingRepo.GetById(booking.BookingId);
-        Console.WriteLine($"Hentet booking for user: {hentetBooking?.UserId}");
+        // READ
+        var fetchedBooking = bookingRepo.GetById(booking.BookingId);
+        Console.WriteLine($"Read Booking: {fetchedBooking?.BookingId}, User {fetchedBooking?.UserId}");
 
-        // Eksempel: List alle bookings for en user
-        foreach (var b in bookingRepo.GetByUserId(newUser.UserId))
+        // LIST FOR USER
+        Console.WriteLine($"All Bookings for User {bookUser.UserId}:");
+        foreach (var b in bookingRepo.GetByUserId(bookUser.UserId))
             Console.WriteLine($" - {b.BookingId}");
 
-        // Eksempel: Delete
-        //bookingRepo.Delete(booking.BookingId);
-        //Console.WriteLine($"Booking {booking.BookingId} slettet");
+        // DELETE
+        bookingRepo.Delete(booking.BookingId);
+        Console.WriteLine($"Deleted Booking: {booking.BookingId}");
 
+        // Ryd op: slet test‐user
+        userRepo.Delete(bookUser.UserId);
+
+        Console.WriteLine("\n--- ALL TESTS FÆRDIGE ---");
     }
 }
