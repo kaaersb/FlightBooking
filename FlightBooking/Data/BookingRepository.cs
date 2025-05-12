@@ -16,8 +16,8 @@ namespace FlightBooking.Core.Data
         public void Add(Booking booking)
         {
             const string sql = @"
-                INSERT INTO Bookings (BookingId, UserId, FlightId, BookingDate)
-                VALUES (@BookingId, @UserId, @FlightId, @BookingDate)";
+                INSERT INTO Bookings (BookingId, UserId, OutboundFlightId, ReturnFlightId, BookingDate)
+                VALUES (@BookingId, @UserId, @OutboundFlightId, @ReturnFlightId, @BookingDate)";
 
             using var conn = new SqlConnection(_connectionString);
             conn.Open();
@@ -25,7 +25,9 @@ namespace FlightBooking.Core.Data
             using var cmd = new SqlCommand(sql, conn);
             cmd.Parameters.Add("@BookingId", SqlDbType.UniqueIdentifier).Value = booking.BookingId;
             cmd.Parameters.Add("@UserId", SqlDbType.UniqueIdentifier).Value = booking.UserId;
-            cmd.Parameters.Add("@FlightId", SqlDbType.UniqueIdentifier).Value = booking.FlightId;
+            cmd.Parameters.Add("@OutboundFlightId", SqlDbType.UniqueIdentifier).Value = booking.OutboundFlightId;
+            cmd.Parameters.Add("@ReturnFlightId", SqlDbType.UniqueIdentifier).Value =
+                (object?)booking.ReturnFlightId ?? DBNull.Value;
             cmd.Parameters.Add("@BookingDate", SqlDbType.DateTime2).Value = booking.BookingDate;
             cmd.ExecuteNonQuery();
         }
