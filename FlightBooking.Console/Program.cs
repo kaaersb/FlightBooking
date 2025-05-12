@@ -4,10 +4,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Data.SqlClient;
 using FlightBooking.Core.Data;
 using FlightBooking.Core.Models;
+using System.Threading.Tasks;
 
 class Program
 {
-    static void Main(string[] args)
+    static async Task Main(string[] args)
     {
         // Hent connection string
         var config = new ConfigurationBuilder()
@@ -20,7 +21,7 @@ class Program
 
         // Opret repositories
         IUserRepository userRepo = new UserRepository(connectionString);
-        IFlightRepository flightRepo = new FlightRepository(connectionString);
+        IFlightRepository flightRepo = new FlightRepository();
         IBookingRepository bookingRepo = new BookingRepository(connectionString);
 
         Console.WriteLine("=== USER CRUD ===");
@@ -92,6 +93,25 @@ class Program
         // DELETE
         // flightRepo.Delete(flight.FlightId);
         // Console.WriteLine($"Deleted Flight: {flight.FlightId}");
+        
+
+
+        FlightRepository flightRepository = new FlightRepository();
+        string origin = "CPH";
+        string destination = "ARN";
+        DateTime outboundDate = new DateTime(2025, 6, 1);
+        DateTime? returnDate = new DateTime(2025, 6, 8);
+
+        Console.WriteLine($"Søger efter fly mellem {origin} og {destination}");
+
+        IEnumerable<Flight> flights = await flightRepository.SearchAsync(origin, destination, outboundDate, returnDate);
+
+        Console.WriteLine($"Found {flights?.Count() ?? 0} flights:");
+
+        foreach(Flight f in flights)
+        {
+            Console.WriteLine($"Flight ID: {f.FlightId}, From: {f.Origin} To: {f.Destination}, Departure: {f.DepartureUtc}, Price: {f.Price:C}");
+        }
 
 
         Console.WriteLine("\n=== BOOKING CRUD ===");
