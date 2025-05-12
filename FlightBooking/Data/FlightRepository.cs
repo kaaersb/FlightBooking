@@ -1,4 +1,5 @@
 ﻿using FlightBooking.Core.Models;
+using Microsoft.Data.SqlClient;
 using System.Text;
 using System.Text.Json;
 
@@ -6,10 +7,15 @@ namespace FlightBooking.Core.Data
 {
     public class FlightRepository : IFlightRepository
     {
+        private readonly string _connectionString;
         private readonly HttpClient _http = new();
         private const string ApiKey = "z4qrWATZSi5qsEiQsL2arX6g";
-
         public FlightRepository() { }
+
+        public FlightRepository(string connectionString)
+        {
+            _connectionString = connectionString;
+        }
 
         public async Task<IEnumerable<Flight>> SearchAsync(
             string origin,
@@ -168,17 +174,26 @@ namespace FlightBooking.Core.Data
             };
         }
 
-
-
-
-        public Flight? GetById(Guid flightId)
+        public void Add(Flight flight)
         {
-            throw new NotImplementedException();
-        }
+            const string sql = @"
+        INSERT INTO Flights (FlightId, FlightNumber, Origin, Destination, DepartureUtc, ArrivalUtc, Price, Airline)
+        VALUES (@FlightId, @FlightNumber, @Origin, @Destination, @DepartureUtc, @ArrivalUtc, @Price, @Airline)";
 
-        public IEnumerable<Flight> GetAll()
-        {
-            throw new NotImplementedException();
+            using var conn = new SqlConnection(_connectionString);
+            conn.Open();
+
+            using var cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@FlightId", flight.FlightId);
+            cmd.Parameters.AddWithValue("@FlightNumber", flight.FlightNumber);
+            cmd.Parameters.AddWithValue("@Origin", flight.Origin);
+            cmd.Parameters.AddWithValue("@Destination", flight.Destination);
+            cmd.Parameters.AddWithValue("@DepartureUtc", flight.DepartureUtc);
+            cmd.Parameters.AddWithValue("@ArrivalUtc", flight.ArrivalUtc);
+            cmd.Parameters.AddWithValue("@Price", flight.Price);
+            cmd.Parameters.AddWithValue("@Airline", flight.Airline);
+
+            cmd.ExecuteNonQuery();
         }
     }
 }

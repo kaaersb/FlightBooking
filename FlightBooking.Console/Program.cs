@@ -21,9 +21,11 @@ class Program
 
         // Opret repositories
         IUserRepository userRepo = new UserRepository(connectionString);
-        IFlightRepository flightRepo = new FlightRepository();
+        IFlightRepository flightRepo = new FlightRepository(connectionString);
         IBookingRepository bookingRepo = new BookingRepository(connectionString);
 
+
+        
         Console.WriteLine("=== USER CRUD ===");
         // CREATE
         var user = new User
@@ -78,25 +80,8 @@ class Program
             Price = 199.50m,
             Airline = "SAS"
         };
-        //flightRepo.Add(flight);
         Console.WriteLine($"Created Flight: {flight.FlightId}");
 
-        // (Hvis du har en GetById på flights:)
-        // var fetchedFlight = flightRepo.GetById(flight.FlightId);
-        // Console.WriteLine($"Read Flight: {fetchedFlight?.FlightNumber} from {fetchedFlight?.Origin} to {fetchedFlight?.Destination}");
-
-        // LIST (via Search eller GetAll afhængig af din implementering)
-        //Console.WriteLine("All Flights (Search CPH→LHR):");
-        //foreach (var f in flightRepo.Search("CPH", "LHR", DateTime.UtcNow.AddDays(1)))
-        //    Console.WriteLine($" - {f.FlightId}: {f.FlightNumber} at {f.DepartureUtc} → {f.ArrivalUtc} ({f.Price} EUR)");
-
-        // DELETE
-        // flightRepo.Delete(flight.FlightId);
-        // Console.WriteLine($"Deleted Flight: {flight.FlightId}");
-        
-
-
-        FlightRepository flightRepository = new FlightRepository();
         string origin = "CPH";
         string destination = "ARN";
         DateTime outboundDate = new DateTime(2025, 6, 1);
@@ -104,7 +89,7 @@ class Program
 
         Console.WriteLine($"Søger efter fly mellem {origin} og {destination}");
 
-        IEnumerable<Flight> flights = await flightRepository.SearchAsync(origin, destination, outboundDate, returnDate);
+        IEnumerable<Flight> flights = await flightRepo.SearchAsync(origin, destination, outboundDate, returnDate);
 
         Console.WriteLine($"Found {flights?.Count() ?? 0} flights:");
 
@@ -112,7 +97,6 @@ class Program
         {
             Console.WriteLine($"Flight ID: {f.FlightId}, From: {f.Origin} To: {f.Destination}, Departure: {f.DepartureUtc}, Price: {f.Price:C}");
         }
-
 
         Console.WriteLine("\n=== BOOKING CRUD ===");
         // Sørg for at have en gyldig userId og flightId; vi genopretter en test‐user
@@ -150,6 +134,42 @@ class Program
         // Ryd op: slet test‐user
         userRepo.Delete(bookUser.UserId);
 
+
+        // Lave en booking med fly og user
+        Console.WriteLine("=========== BOOKING MED BRUGER OG FLY ==========");
+        if (flights.Any())
+        {
+            Console.WriteLine("Der er fly i listen");
+            Flight selectedFlight = flights.First();
+
+            User userTest = userRepo.GetById(Guid.Parse("1e2b1c77-ac87-444d-b322-debb38b69d6a"));
+            if (user == null)
+            {
+                Console.WriteLine("Ingen bruger >:(");
+            }
+
+            Booking bookingTest = new Booking
+            {
+                BookingId = Guid.NewGuid(),
+                UserId = userTest.UserId,
+                FlightId = selectedFlight.FlightId,
+                Flight = selectedFlight,
+                User = userTest,
+                BookingDate = DateTime.Now
+            };
+
+            flightRepo.Add(selectedFlight);
+            bookingRepo.Add(bookingTest);
+
+            Console.WriteLine("Booking skabt! User: " + userTest.Name + ", Flight: " + selectedFlight.FlightNumber);
+        }
+
+        else
+        {
+            Console.WriteLine("Ingen fly :((");
+        }
+
         Console.WriteLine("\n--- ALL TESTS FÆRDIGE ---");
+        
     }
 }
