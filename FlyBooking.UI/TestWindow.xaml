@@ -1,0 +1,48 @@
+﻿<Window x:Class="FlyBooking.UI.TestWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:FlyBooking.UI"
+        xmlns:views="clr-namespace:FlyBooking.UI"
+        mc:Ignorable="d"
+        Title="TestWindow" Height="450" Width="800">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200" />
+            <ColumnDefinition Width="200" />
+            <ColumnDefinition Width="200" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50" />
+            <RowDefinition Height="100" />
+            <RowDefinition Height="100"/>
+        </Grid.RowDefinitions>
+        <ListBox Margin="0,5,15,10" Grid.Row="0">
+            <TextBlock Text="Arial" FontFamily="Arial"/>
+            <TextBlock Text="Courier New" FontFamily="Courier New"/>
+            <TextBlock Text="Times New Roman" FontFamily="Times New Roman"/>
+        </ListBox>
+        <ComboBox Width="200" Grid.Row="0" Grid.Column="1"
+                  ToolTip="User Settings" 
+                  Text="Placeholder"    
+                  IsEditable="True" 
+                  IsReadOnly="True" SelectionChanged="ComboBox_SelectionChanged"> 
+            <ComboBoxItem>Delete User</ComboBoxItem>
+            <ComboBoxItem>Change password</ComboBoxItem>
+            <ComboBoxItem>Example</ComboBoxItem>
+            <ComboBoxItem>example2</ComboBoxItem>
+        </ComboBox>
+           
+        <Menu Grid.Row="0" Grid.Column="2">
+            <MenuItem Header="Username">
+                <MenuItem Header="Profile"/>
+                <MenuItem Header="Settings"/>
+                <Separator/>
+                <MenuItem Header="Logout"/>
+            </MenuItem>
+        </Menu>
+
+        <views:LoginView x:Name="LoginControl"/>
+    </Grid>
+</Window>

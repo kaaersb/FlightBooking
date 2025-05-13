@@ -127,5 +127,41 @@ namespace FlightBooking.Core.Data
                 };
             }
         }
+
+        public (bool, string) ValidateUser2(string email, string password)
+        {
+            using (MySqlConnection connection = new MySqlConnection(connectionString))
+            {
+                connection.Open();
+                string query = "SELECT user_password FROM testuserdb.users WHERE user_email = @Email";
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@Email", email);
+                    using (MySqlDataReader reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            string storedPassword = reader["user_password"].ToString();
+
+                            if (password == storedPassword)
+                            {
+                                return (true, "Login successfull!");
+                            }
+                            else
+                            {
+                                return (false, "Invalid password.");
+                            }
+                        }
+                        else
+                        {
+                            return (false, "User not found.");
+                        }
+                        // Note to future marcus: if you want to move the logic to the BLL make it so the function
+                        // returns a boolean and a string(storedPassword). If the bool is false that means
+                        // the user was not found
+                    }
+                }
+            }
+        }
     }
 }

@@ -1,0 +1,142 @@
+﻿<Window x:Class="GUI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:GUI"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="750" Width="1000">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="4*"/>
+            <ColumnDefinition Width="1*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="0.5*" />
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="2*" />
+            <RowDefinition Height="0.5*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="2">
+            <Button x:Name="login"
+                    Content="Log in"
+                    Click="OpenLoginViewWindow_Click"
+                    FontFamily="Arial" Foreground="#FF0E0C07"
+                    Height="30"
+                    Width="50"
+                    Margin="10,10,10,10"
+                    />
+            <Button x:Name="createUser" 
+                    Content="Opret Bruger" 
+                    Click="OpenCreateUserWindow_Click" 
+                    FontFamily="Arial" Foreground="#FF0E0C07"
+                    Height="30"
+                    Width="75"/>
+
+        </StackPanel>
+
+        <!-- Knap til at hente flydata -->
+        <Button x:Name="btnGetFlights" 
+                Content="Hent Fly" 
+                HorizontalAlignment="Center" 
+                Click="btnGetFlights_Click"
+                Grid.Row="1"
+                Grid.Column="1"
+                Height="30"
+                Width="50"
+                VerticalAlignment="Bottom"
+                   />
+
+        <!-- Border der omringer søge felterne -->
+        <Border BorderThickness="1" 
+                BorderBrush="#FF5F5F5F" 
+                CornerRadius="4" 
+                HorizontalAlignment="Center"
+                Grid.Column="1"
+                Grid.Row="1"
+                Height="100"
+                Width="650"
+                >
+            <!-- Samlende StackPanel til søge felterne -->
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+                <!-- StackPanel der holder på Fra/Til felter -->
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Left">
+
+                    <!-- TextBox til afrejse -->
+                    <TextBox x:Name="departureAirport"
+                             Width="100"
+                             Height="30"
+                             Text="Fra?" Background="White" TextWrapping="Wrap"
+                             />
+
+                    <!-- Textbox til destination -->
+                    <TextBox x:Name="arrivalAirport" 
+                             HorizontalAlignment="Left" 
+                             Width="100"
+                             Height="30"
+                             Margin="0,0,10,0"
+                             Text="Til?"
+                             />
+
+                </StackPanel >
+                <StackPanel Orientation="Horizontal">
+                    <Label Content="Udrejse dato:"
+                       Height="30"
+                       />
+                    <DatePicker x:Name="datePickerOutbound"
+                                Height="30"
+                                Padding="5" Cursor="Hand" Text="Udrejse"
+                            />
+                    <Label Content="Hjemrejse dato:"
+                           Height="30"
+                           />
+                    <DatePicker x:Name="datePickerInbound"
+                                Height="30"
+                                Padding="5" Cursor="Hand" Text="Hjemrejse"/>
+                </StackPanel>
+
+            </StackPanel>
+        </Border>
+
+        <ListBox ItemsSource="{Binding FlightGroups}"
+                 Grid.Row="2"
+                 Grid.Column="1"
+                 Margin="0,50,0,0">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Margin="5">
+                        <!-- Eksempel på overskrift, evt. med et ikon hvis der er forbindelser -->
+                        <TextBlock Text="Booking:" FontWeight="Bold" FontSize="14" />
+                        <!-- Liste over flysegmenter for denne booking -->
+                        <ItemsControl ItemsSource="{Binding Flights}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" Margin="2">
+                                        <TextBlock FontWeight="Bold" FontSize="14" Text="{Binding FlightNumber}" />
+                                        <TextBlock Text=" Fra: " Foreground="Gray"/>
+                                        <TextBlock Text="{Binding DepartureAirport.Name}" />
+                                        <TextBlock Text=" Til: " Foreground="Gray"/>
+                                        <TextBlock Text="{Binding ArrivalAirport.Name}" />
+                                        <TextBlock Text=" Fly: " Foreground="Gray"/>
+                                        <TextBlock Text="{Binding Airline}" />
+                                        <TextBlock Text=" Rejseklasse: " Foreground="Gray"/>
+                                        <TextBlock Text="{Binding TravelClass}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <!-- Vis den samlede pris for bookingen -->
+                        <TextBlock FontWeight="Bold" FontSize="14" Foreground="DarkGreen"
+                           Text="{Binding Price, StringFormat='Pris: {0:C}'}"/>
+                        <Separator />
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
+</Window>
