@@ -1,4 +1,5 @@
-﻿<Window x:Class="GUI.MainWindow"
+﻿
+<Window x:Class="GUI.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -6,6 +7,10 @@
         xmlns:local="clr-namespace:GUI"
         mc:Ignorable="d"
         Title="MainWindow" Height="750" Width="1000">
+    <Window.Resources>
+        <local:UrlToImageConverter x:Key="UrlToImageConverter"/>
+        <local:DurationConverter x:Key="DurationConverter"/>
+    </Window.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1*"/>
@@ -119,18 +124,99 @@
         </Border>
 
         <ListBox ItemsSource="{Binding Flights}"
-                 Grid.Row="2"
-                 Grid.Column="1">
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <!-- e.g. show FlightNumber, DepartureUtc, Price osv. -->
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{Binding FlightNumber}" FontWeight="Bold"/>
-                        <TextBlock Margin="8,0,0,0" Text="{Binding DepartureUtc, StringFormat='HH:mm'}"/>
-                        <TextBlock Margin="8,0,0,0" Text="{Binding Price, StringFormat='Pris: {0:C}'}"/>
-                    </StackPanel>
+                 Grid.Row="2" Grid.Column="1"
+                 Background="Transparent" 
+                 BorderThickness="0"
+                 Padding="0"
+                 Margin="0">
+                 <ListBox.ItemTemplate>
+                 <DataTemplate>
+                    <Border CornerRadius="6"
+                            BorderBrush="#CCC"
+                            BorderThickness="1"
+                            Width="600"
+                            Height="100"
+                            Padding="12"
+                            Margin="0,0,0,8"
+                            Background="White"
+                            SnapsToDevicePixels="True">
+                        <Grid VerticalAlignment="Center">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <!-- Logo -->
+                                <ColumnDefinition Width="2*"/>
+                                <!-- Airline & flight# -->
+                                <ColumnDefinition Width="2*"/>
+                                <!-- Times & airports -->
+                                <ColumnDefinition Width="Auto"/>
+                                <!-- Duration -->
+                                <ColumnDefinition Width="Auto"/>
+                                <!-- Price + button -->
+                            </Grid.ColumnDefinitions>
+
+                            <!-- 1) Logo -->
+                            <Image Grid.Column="0" Width="40" Height="40"
+                                   Source="{Binding AirlineLogo, Converter={StaticResource UrlToImageConverter}}"
+                                   Margin="0,0,16,0"
+                                   VerticalAlignment="Center"/>
+
+                            <!-- 2) Airline name + flight number -->
+                            <StackPanel Grid.Column="1" Orientation="Vertical" VerticalAlignment="Center">
+                                <TextBlock Text="{Binding Airline}"
+                                           FontWeight="Bold"
+                                           FontSize="14"/>
+                                <TextBlock Text="{Binding FlightNumber}"
+                                           Foreground="#666"
+                                           FontSize="12"/>
+                            </StackPanel>
+
+                            <!-- 3) Departure & arrival -->
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                <StackPanel Orientation="Vertical">
+                                    <TextBlock FontWeight="SemiBold" Text="{Binding DepartureAirport.id}"/>
+                                    <TextBlock Text="{Binding DepartureUtc, StringFormat={}{0:HH:mm}}" Foreground="#444"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Vertical">
+                                    <TextBlock FontWeight="SemiBold" Text="{Binding ArrivalAirport.id}"/>
+                                    <TextBlock Text="{Binding ArrivalUtc, StringFormat={}{0:HH:mm}}" Foreground="#444"/>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- 4) Duration -->
+                            <TextBlock Grid.Column="3"
+                                       VerticalAlignment="Center"
+                                       Margin="24,0"
+                                        FontSize="12">
+                                <TextBlock.Text>
+                                    <MultiBinding Converter="{StaticResource DurationConverter}">
+                                        <Binding Path="DepartureUtc"/>
+                                        <Binding Path="ArrivalUtc"/>
+                                    </MultiBinding>
+                                </TextBlock.Text>
+                            </TextBlock>
+
+                            <!-- 5) Price + button -->
+                            <StackPanel Grid.Column="4"
+                                        Orientation="Horizontal"
+                                        VerticalAlignment="Center"
+                                        Margin="24,0,0,0">
+                                <TextBlock Text="{Binding Price, StringFormat={}{0:C}}"
+                                           FontWeight="Bold"
+                                           FontSize="16"
+                                           VerticalAlignment="Center"/>
+                                <Button Content="Vælg"
+                                        Margin="12,0,0,0"
+                                        Padding="12,4"
+                                        Background="#0078D7"
+                                        Foreground="White"
+                                        FontSize="12"
+                                        Cursor="Hand"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
+
     </Grid>
 </Window>

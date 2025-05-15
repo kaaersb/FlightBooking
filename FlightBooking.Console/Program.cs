@@ -113,7 +113,7 @@ class Program
         {
             BookingId = Guid.NewGuid(),
             UserId = bookUser.UserId,
-            FlightId = flight.FlightId
+            OutboundFlightId = flight.FlightId
         };
         bookingRepo.Add(booking);
         Console.WriteLine($"Created Booking: {booking.BookingId} for User {booking.UserId}");
@@ -152,8 +152,8 @@ class Program
             {
                 BookingId = Guid.NewGuid(),
                 UserId = userTest.UserId,
-                FlightId = selectedFlight.FlightId,
-                Flight = selectedFlight,
+                OutboundFlightId = selectedFlight.FlightId,
+                OutboundFlight = selectedFlight,
                 User = userTest,
                 BookingDate = DateTime.Now
             };
