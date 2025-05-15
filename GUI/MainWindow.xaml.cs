@@ -1,4 +1,4 @@
-﻿using FlyBooking.UI;
+﻿using GUI.Views;
 using System.Collections.ObjectModel;
 using System.Text;
 using System.Windows;
@@ -18,22 +18,10 @@ namespace GUI
     /// </summary>
     public partial class MainWindow : Window
     {
-        private readonly FlightService _flightService;
-
-        // Liste til at binde til UI
-        public ObservableCollection<FlightGroup> FlightGroups { get; set; }
-
-        CreateUserWindow createUserWindow = new CreateUserWindow();
 
         public MainWindow()
         {
             InitializeComponent();
-
-            // Initialisere FlightService objekt
-            _flightService = new FlightService();
-
-            // Initialiser ObservableCollection
-            FlightGroups = new ObservableCollection<FlightGroup>();
 
             DataContext = this;
         }
@@ -44,6 +32,7 @@ namespace GUI
          */
         private async void btnGetFlights_Click(object sender, RoutedEventArgs e)
         {
+            /*
             string engine = "google_flights";
             string flight_type = "round_trip";
 
@@ -74,12 +63,15 @@ namespace GUI
 
             // Knappen venter på at addFlightsToList er færdig
             await addFlightsToList(engine, flight_type, departure_id, arrival_id, outbound_date, return_date);
+            */
 
+            MessageBox.Show("Hent nogle fly :D");
         }
+
 
         /* Metode til at tilføje fly til listen der vises for brugeren
          * 
-        */
+        
         private async Task addFlightsToList(string engine, string flight_type, string departure_id, string arrival_id, string outbound_date, string return_date)
         {
             try
@@ -122,15 +114,21 @@ namespace GUI
             }
         }
 
+        */
 
+        
         // event handler for createUser button
         private void OpenCreateUserWindow_Click(object sender, RoutedEventArgs e)
         {
+            /*
             CreateUserWindow createUserWindow = new CreateUserWindow();
             createUserWindow.Owner = this; // Set the main window as the owner of the user creation window
             createUserWindow.ShowDialog(); // Show the user creation window as a dialog
-        }
+            */
 
+            MessageBox.Show(":D:D");
+        }
+        
         private void OpenLoginViewWindow_Click(object sender, RoutedEventArgs e)
         {
             LoginView loginWindow = new LoginView();

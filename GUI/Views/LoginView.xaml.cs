@@ -1,50 +1,43 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using FlightBooking.Core.Data; // Make sure this matches your namespace
+ 
 
-namespace FlyBooking.UI
+namespace GUI.Views
 {
-    /// <summary>
-    /// Interaction logic for LoginView.xaml
-    /// </summary>
     public partial class LoginView : Window
     {
+        private readonly UserRepository _userRepository;
+
         public LoginView()
         {
             InitializeComponent();
+            string connectionString = "Server=tcp:p2gruppe.database.windows.net,1433;Initial Catalog=flightbooking;Persist Security Info=False;User ID=p2gruppe;Password=admin123!;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"; // or read from config
+            _userRepository = new UserRepository(connectionString);
         }
 
-        UserService userService = new UserService();
         private void LoginButton_Click(object sender, RoutedEventArgs e)
         {
             string username = UsernameTextBox.Text;
             string password = PasswordBox.Password;
 
-            var (isValid, message) = userService.Validateuser(username, password);
+            var (isValid, message) = _userRepository.ValidateUser(username, password);
+
             if (isValid)
             {
                 this.Visibility = Visibility.Collapsed;
+                // Optionally open the next window here
             }
             else
             {
                 MessageBox.Show(message);
             }
         }
-        // denne Click funktion skal kalde en funktion i enten BLL eller MainWindow.xaml.cs som lukker/hider usercontrol
+
         private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
 
         }
     }
+
 }
