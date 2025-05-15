@@ -3,6 +3,7 @@ using System.Windows;
 using FlightBooking.Core.Data;
 using FlightBooking.Core.Models;
 using System.Runtime.CompilerServices;
+using System.Configuration;
 
 namespace GUI
 {
@@ -35,13 +36,23 @@ namespace GUI
         // event handler for createUser button
         private void OpenCreateUserWindow_Click(object sender, RoutedEventArgs e)
         {
-            /*
-            CreateUserWindow createUserWindow = new CreateUserWindow();
-            createUserWindow.Owner = this; // Set the main window as the owner of the user creation window
-            createUserWindow.ShowDialog(); // Show the user creation window as a dialog
-            */
+            CreateUserView createWindow = new CreateUserView { Owner = this };
 
-            MessageBox.Show(":D:D");
+            if (createWindow.ShowDialog() == true)
+            {
+                User user = new User
+                {
+                    UserId = Guid.NewGuid(),
+                    Name = createWindow.UserName,
+                    Email = createWindow.Email,
+                    Password = createWindow.Password
+                };
+
+                UserRepository userRepository = new UserRepository(Config.ConnectionString);
+                userRepository.Add(user);
+
+                MessageBox.Show($"Bruger: '{user.Name}' oprettet", "Succes", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
         }
         
         private void OpenLoginViewWindow_Click(object sender, RoutedEventArgs e)
@@ -63,6 +74,7 @@ namespace GUI
 
             ProfileButton.Visibility = Visibility.Visible;
             WelcomeText.Text = "Welcome, " + currentUser.Name;
+            ProfileButton.Content = currentUser.Name;
         }
 
         private void OpenProfile_Click(object sender, RoutedEventArgs e)

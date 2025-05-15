@@ -47,7 +47,7 @@
                     Visibility="Collapsed"
                     Width="32" Height="32"
                     Click="OpenProfile_Click">
-                <Image Source="../Assets/user.png" Stretch="Uniform"/>
+                
             </Button>
 
         </StackPanel>

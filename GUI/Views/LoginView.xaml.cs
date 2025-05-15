@@ -2,14 +2,14 @@
 using System.Windows.Controls;
 using FlightBooking.Core.Data;// Make sure this matches your namespace
 using FlightBooking.Core.Models;
- 
+using System.Configuration;
+
 
 namespace GUI.Views
 {
     public partial class LoginView : Window
     {
-        private readonly static string connectionString = "Server=tcp:p2gruppe.database.windows.net,1433;Initial Catalog=flightbooking;Persist Security Info=False;User ID=p2gruppe;Password=admin123!;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"; // or read from config
-        private readonly UserRepository _userRepository = new UserRepository(connectionString);
+        private readonly UserRepository _userRepository = new UserRepository(Config.ConnectionString);
 
         public User LoggedInUser { get; private set; }
 
