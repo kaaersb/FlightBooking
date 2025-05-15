@@ -16,7 +16,12 @@ namespace GUI.Views
             _userRepository = new UserRepository(connectionString);
         }
 
-        private void LoginButton_Click(object sender, RoutedEventArgs e)
+        private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+
+        }
+
+        private void LoginBtn_Click(object sender, RoutedEventArgs e)
         {
             string username = UsernameTextBox.Text;
             string password = PasswordBox.Password;
@@ -32,11 +37,6 @@ namespace GUI.Views
             {
                 MessageBox.Show(message);
             }
-        }
-
-        private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-
         }
     }
 
