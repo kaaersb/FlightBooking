@@ -118,37 +118,16 @@
             </StackPanel>
         </Border>
 
-        <ListBox ItemsSource="{Binding FlightGroups}"
+        <ListBox ItemsSource="{Binding Flights}"
                  Grid.Row="2"
-                 Grid.Column="1"
-                 Margin="0,50,0,0">
+                 Grid.Column="1">
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <StackPanel Margin="5">
-                        <!-- Eksempel på overskrift, evt. med et ikon hvis der er forbindelser -->
-                        <TextBlock Text="Booking:" FontWeight="Bold" FontSize="14" />
-                        <!-- Liste over flysegmenter for denne booking -->
-                        <ItemsControl ItemsSource="{Binding Flights}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <StackPanel Orientation="Horizontal" Margin="2">
-                                        <TextBlock FontWeight="Bold" FontSize="14" Text="{Binding FlightNumber}" />
-                                        <TextBlock Text=" Fra: " Foreground="Gray"/>
-                                        <TextBlock Text="{Binding DepartureAirport.Name}" />
-                                        <TextBlock Text=" Til: " Foreground="Gray"/>
-                                        <TextBlock Text="{Binding ArrivalAirport.Name}" />
-                                        <TextBlock Text=" Fly: " Foreground="Gray"/>
-                                        <TextBlock Text="{Binding Airline}" />
-                                        <TextBlock Text=" Rejseklasse: " Foreground="Gray"/>
-                                        <TextBlock Text="{Binding TravelClass}" />
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                        <!-- Vis den samlede pris for bookingen -->
-                        <TextBlock FontWeight="Bold" FontSize="14" Foreground="DarkGreen"
-                           Text="{Binding Price, StringFormat='Pris: {0:C}'}"/>
-                        <Separator />
+                    <!-- e.g. show FlightNumber, DepartureUtc, Price osv. -->
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding FlightNumber}" FontWeight="Bold"/>
+                        <TextBlock Margin="8,0,0,0" Text="{Binding DepartureUtc, StringFormat='HH:mm'}"/>
+                        <TextBlock Margin="8,0,0,0" Text="{Binding Price, StringFormat='Pris: {0:C}'}"/>
                     </StackPanel>
                 </DataTemplate>
             </ListBox.ItemTemplate>

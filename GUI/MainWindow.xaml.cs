@@ -4,6 +4,8 @@ using FlightBooking.Core.Data;
 using FlightBooking.Core.Models;
 using System.Runtime.CompilerServices;
 using System.Configuration;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 
 namespace GUI
 {
@@ -14,6 +16,9 @@ namespace GUI
     {
 
         private User currentUser;
+        private readonly IFlightRepository flightRepository = new FlightRepository(Config.ConnectionString);
+
+        public ObservableCollection<Flight> Flights { get; } = new ObservableCollection<Flight>();
 
         public MainWindow()
         {
@@ -22,14 +27,52 @@ namespace GUI
             DataContext = this;
         }
 
+        public event PropertyChangedEventHandler? PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string prop = "") => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
+
         /* Funktion til når brugeren trykker på knappen "Hent fly"
          * 
          *
          */
         private async void btnGetFlights_Click(object sender, RoutedEventArgs e)
         {
+            string origin = departureAirport.Text.Trim().ToUpper();
+            string destination = arrivalAirport.Text.Trim().ToUpper();
+            DateTime outbound;
+            DateTime? inbound = null;
 
-            MessageBox.Show("Hent nogle fly :D");
+            if (string.IsNullOrEmpty(origin) || string.IsNullOrEmpty(destination))
+            {
+                MessageBox.Show("Fra og til skal udfyldes");
+                return;
+            }
+
+            if(!datePickerOutbound.SelectedDate.HasValue)
+            {
+                MessageBox.Show("Vælg en afrejse dato");
+            }
+
+            outbound = datePickerOutbound.SelectedDate.Value;
+
+            if (datePickerInbound.SelectedDate.HasValue)
+            {
+                inbound = datePickerInbound.SelectedDate.Value;
+            }
+
+            try
+            {
+                IEnumerable<Flight> flightResults = await flightRepository.SearchAsync(origin, destination, outbound, inbound);
+
+                Flights.Clear();
+                foreach (Flight flight in flightResults) 
+                {
+                    Flights.Add(flight);
+                }
+            }
+            catch ( Exception ex )
+            {
+                MessageBox.Show($"Fejl ved hentning af fly: {ex.Message}");
+            }
         }
 
         

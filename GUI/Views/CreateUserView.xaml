@@ -109,7 +109,7 @@
                                 <Setter.Value>
                                     <ControlTemplate TargetType="{x:Type Button}">
                                         <Border x:Name="RegisterBorder" Background="{TemplateBinding Background}"
-                                                CornerRadius="16" BorderThickness="1">
+                                                CornerRadius="16">
                                             <ContentPresenter HorizontalAlignment="Center"
                                                                   VerticalAlignment="Center"/>
                                         </Border>
