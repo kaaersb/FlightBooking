@@ -19,6 +19,13 @@
             <RowDefinition Height="0.5*" />
         </Grid.RowDefinitions>
 
+        <TextBlock x:Name="WelcomeText"
+                   Visibility="Visible"
+                   Grid.Row="0"
+                   Grid.Column="0">
+            Welcome
+        </TextBlock>
+
         <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="2">
             <Button x:Name="login"
                     Content="Log in"
@@ -34,6 +41,14 @@
                     FontFamily="Arial" Foreground="#FF0E0C07"
                     Height="30"
                     Width="75"/>
+            
+
+            <Button x:Name="ProfileButton"
+                    Visibility="Collapsed"
+                    Width="32" Height="32"
+                    Click="OpenProfile_Click">
+                <Image Source="../Assets/user.png" Stretch="Uniform"/>
+            </Button>
 
         </StackPanel>
 

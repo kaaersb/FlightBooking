@@ -104,6 +104,32 @@ namespace FlightBooking.Core.Data
             };
         }
 
+        public User? GetByEmail(string email)
+        {
+            const string sql = @"
+        SELECT UserId, Name, Email, Password
+          FROM Users
+         WHERE Email = @Email";
+
+            using var conn = new SqlConnection(_connectionString);
+            conn.Open();
+
+            using var cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.Add("@Email", SqlDbType.NVarChar, 200).Value = email;
+
+            using var reader = cmd.ExecuteReader();
+            if (!reader.Read())
+                return null;
+
+            return new User
+            {
+                UserId = reader.GetGuid(0),
+                Name = reader.GetString(1),
+                Email = reader.GetString(2),
+                Password = reader.GetString(3)
+            };
+        }
+
 
         // FUNKTION TIL AT HENTE ALLE BRUGERE FRA DATABASEN
         public IEnumerable<User> GetAll()

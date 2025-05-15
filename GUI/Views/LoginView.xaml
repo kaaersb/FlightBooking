@@ -35,18 +35,17 @@
                         <RowDefinition Height="*"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
-                    <TextBlock Text="User Name" 
+                    <TextBlock 
                                Grid.Row="0"
                                Margin="0,15"
-                               HorizontalAlignment="Center"/>
+                               HorizontalAlignment="Center"><Run Language="da-dk" Text="E-Mail"/></TextBlock>
                     <TextBox Grid.Row="1"
                              Padding="0,5"
-                             Name="UsernameTextBox"
+                             Name="EmailTextBox"
                              Width="255"
                              BorderThickness="0,0,0,1"
                              HorizontalAlignment="Left"
-                             Text=""
-                             TextChanged="TextBox_TextChanged"/>
+                             Text=""/>
                     <TextBlock Text="Password" 
                                Grid.Row="2"
                                Margin="0,15"
