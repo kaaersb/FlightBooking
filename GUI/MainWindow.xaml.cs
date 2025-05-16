@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Configuration;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Windows.Controls;
 
 namespace GUI
 {
@@ -23,7 +24,6 @@ namespace GUI
         public MainWindow()
         {
             InitializeComponent();
-
             DataContext = this;
         }
 
@@ -36,47 +36,70 @@ namespace GUI
          */
         private async void btnGetFlights_Click(object sender, RoutedEventArgs e)
         {
-            string origin = departureAirport.Text.Trim().ToUpper();
-            string destination = arrivalAirport.Text.Trim().ToUpper();
-            DateTime outbound;
-            DateTime? inbound = null;
+            // 1) Read & normalize IATA codes
+            string origin = originTextbox.Text.Trim().ToUpperInvariant();
+            string destination = destinationTextbox.Text.Trim().ToUpperInvariant();
 
-            if (string.IsNullOrEmpty(origin) || string.IsNullOrEmpty(destination))
+            if (origin.Length != 3 || destination.Length != 3)
             {
-                MessageBox.Show("Fra og til skal udfyldes");
+                MessageBox.Show("Fra og til skal være 3‐bogstavers IATA‐koder");
                 return;
             }
 
-            if(!datePickerOutbound.SelectedDate.HasValue)
+            // 2) Read outbound date
+            if (!OutboundDate.SelectedDate.HasValue)
             {
-                MessageBox.Show("Vælg en afrejse dato");
+                MessageBox.Show("Vælg en afrejsedato");
+                return;
+            }
+            DateTime outboundDate = OutboundDate.SelectedDate.Value;
+
+            // 3) Are we doing round trip?
+            bool isRoundTrip = RoundTripTab.IsSelected;
+
+            // 4) Read return date only if round‐trip
+            DateTime? returnDate = null;
+            if (isRoundTrip)
+            {
+                if (!ReturnDate.SelectedDate.HasValue)
+                {
+                    MessageBox.Show("Vælg en returdato eller skift til enkelt tur");
+                    return;
+                }
+                returnDate = ReturnDate.SelectedDate.Value;
             }
 
-            outbound = datePickerOutbound.SelectedDate.Value;
-
-            if (datePickerInbound.SelectedDate.HasValue)
+            // 5) Read passenger count
+            int passengerCount = 1; // default
+            if (PassengerCountBox.SelectedItem is ComboBoxItem item &&
+                int.TryParse(item.Content.ToString(), out var pc))
             {
-                inbound = datePickerInbound.SelectedDate.Value;
+                passengerCount = pc;
+            }
+            else
+            {
+                MessageBox.Show("Vælg antal rejsende");
+                return;
             }
 
+            // 6) Call your updated repository method
             try
             {
-                IEnumerable<Flight> flightResults = await flightRepository.SearchAsync(origin, destination, outbound, inbound);
+                var flightResults = await flightRepository
+                    .SearchAsync(origin, destination, outboundDate, returnDate, passengerCount);
 
                 Flights.Clear();
-                foreach (Flight flight in flightResults) 
-                {
-                    Flights.Add(flight);
-                }
+                foreach (var f in flightResults)
+                    Flights.Add(f);
             }
-            catch ( Exception ex )
+            catch (Exception ex)
             {
                 MessageBox.Show($"Fejl ved hentning af fly: {ex.Message}");
             }
         }
 
-        
-        // event handler for createUser button
+
+        // event handle for createUser button
         private void OpenCreateUserWindow_Click(object sender, RoutedEventArgs e)
         {
             CreateUserView createWindow = new CreateUserView { Owner = this };
@@ -124,7 +147,6 @@ namespace GUI
         {
 
         }
-
 
     }
 }

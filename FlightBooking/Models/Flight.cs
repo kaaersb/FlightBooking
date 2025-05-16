@@ -30,6 +30,7 @@ namespace FlightBooking.Core.Models
         public List<Layover> Layovers { get; set; } = new();
     }
 
+
     public class FlightSegment
     {
         public AirportInfo DepartureAirport { get; set; } = new();

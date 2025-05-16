@@ -37,25 +37,57 @@ namespace GUI
         }
     }
 
-    // DurationConverter: shows “1h 10m” from two DateTimes
-    public class DurationConverter : IMultiValueConverter
+    public class MinutesToHoursConverter : IValueConverter
     {
-        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (values.Length == 2
-                && values[0] is DateTime dep
-                && values[1] is DateTime arr)
+            if (!(value is int minutes))
+                return "";
+
+            int h = minutes / 60;
+            int m = minutes % 60;
+            return $"{h}t {m}m";
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            => throw new NotImplementedException();
+    }
+
+    public class StopsConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is int count)
             {
-                var diff = arr - dep;
-                return $"{(int)diff.TotalHours}h {diff.Minutes}m";
+                if (count == 0) return "Direct";
+                if (count == 1) return "1 stop";
+                return $"{count} stops";
             }
             return "";
         }
 
-        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
-        {
-            throw new NotImplementedException();
-        }
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+           => throw new NotImplementedException();
     }
 
+    public class InverseBoolConverter : IValueConverter
+    {
+        // value comes from the source (bool) → UI target (IsEnabled, Visibility, etc)
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is bool b)
+                return !b;
+
+            return DependencyProperty.UnsetValue;
+        }
+
+        // for two-way bindings (not strictly required for IsEnabled)
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is bool b)
+                return !b;
+
+            return DependencyProperty.UnsetValue;
+        }
+    }
 }

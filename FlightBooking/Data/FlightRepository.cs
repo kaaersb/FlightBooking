@@ -21,7 +21,8 @@ namespace FlightBooking.Core.Data
             string origin,
             string destination,
             DateTime outboundDate,
-            DateTime? returnDate = null)
+            DateTime? returnDate = null,
+            int passengerCount = 1)
         {
             string flightType = returnDate.HasValue ? "round_trip" : "one_way";
             string url = $"https://www.searchapi.io/api/v1/search" +
@@ -37,6 +38,8 @@ namespace FlightBooking.Core.Data
             {
                 url += $"&return_date={returnDate:yyyy-MM-dd}";
             }
+
+            url += $"&passenger={passengerCount}";
 
             Console.WriteLine(url);
 

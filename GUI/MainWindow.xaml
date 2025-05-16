@@ -1,15 +1,17 @@
-﻿
-<Window x:Class="GUI.MainWindow"
+﻿<Window x:Class="GUI.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:s="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:local="clr-namespace:GUI"
         mc:Ignorable="d"
         Title="MainWindow" Height="750" Width="1000">
     <Window.Resources>
         <local:UrlToImageConverter x:Key="UrlToImageConverter"/>
-        <local:DurationConverter x:Key="DurationConverter"/>
+        <local:MinutesToHoursConverter x:Key="MinToHours"/>
+        <local:InverseBoolConverter x:Key="InverseBoolConverter" />
+        <local:StopsConverter x:Key="StopsConverter"/>
     </Window.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
@@ -19,7 +21,7 @@
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="0.5*" />
-            <RowDefinition Height="1*" />
+            <RowDefinition Height="1.5*" />
             <RowDefinition Height="2*" />
             <RowDefinition Height="0.5*" />
         </Grid.RowDefinitions>
@@ -46,28 +48,16 @@
                     FontFamily="Arial" Foreground="#FF0E0C07"
                     Height="30"
                     Width="75"/>
-            
+
 
             <Button x:Name="ProfileButton"
                     Visibility="Collapsed"
                     Width="32" Height="32"
                     Click="OpenProfile_Click">
-                
+
             </Button>
 
         </StackPanel>
-
-        <!-- Knap til at hente flydata -->
-        <Button x:Name="btnGetFlights" 
-                Content="Hent Fly" 
-                HorizontalAlignment="Center" 
-                Click="btnGetFlights_Click"
-                Grid.Row="1"
-                Grid.Column="1"
-                Height="30"
-                Width="50"
-                VerticalAlignment="Bottom"
-                   />
 
         <!-- Border der omringer søge felterne -->
         <Border BorderThickness="1" 
@@ -76,51 +66,144 @@
                 HorizontalAlignment="Center"
                 Grid.Column="1"
                 Grid.Row="1"
-                Height="100"
+                Height="200"
                 Width="650"
                 >
-            <!-- Samlende StackPanel til søge felterne -->
-            <StackPanel Orientation="Horizontal"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center">
-                <!-- StackPanel der holder på Fra/Til felter -->
-                <StackPanel Orientation="Horizontal"
-                            HorizontalAlignment="Left">
+            <Grid Margin="20">
+                <!-- 4 rows: Tabs / Labels / Inputs / Button -->
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <!-- TabControl -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Labels -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Inputs -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Search Button -->
+                </Grid.RowDefinitions>
+                <!-- 5 equal columns for your 5 fields -->
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
 
-                    <!-- TextBox til afrejse -->
-                    <TextBox x:Name="departureAirport"
-                             Width="100"
-                             Height="30"
-                             Text="Fra?" Background="White" TextWrapping="Wrap"
-                             />
+                <!-- 1) Round‐trip / One‐way tabs -->
+                <TabControl Grid.Row="0" Grid.ColumnSpan="5"
+                            Background="Transparent" BorderThickness="0"
+                            Margin="0,0,0,16">
+                    <TabItem Header="Retur tur" IsSelected="True" x:Name="RoundTripTab">
+                        <TabItem.Style>
+                            <Style TargetType="TabItem">
+                                <Setter Property="Foreground" Value="#444"/>
+                                <Setter Property="Padding" Value="10,5"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter Property="Foreground" Value="#0077CC"/>
+                                        <Setter Property="BorderThickness" Value="0,0,0,2"/>
+                                        <Setter Property="BorderBrush" Value="#0077CC"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TabItem.Style>
+                    </TabItem>
+                    <TabItem Header="Enkelt tur" x:Name="OneWayTab" />
+                </TabControl>
 
-                    <!-- Textbox til destination -->
-                    <TextBox x:Name="arrivalAirport" 
-                             HorizontalAlignment="Left" 
-                             Width="100"
-                             Height="30"
-                             Margin="0,0,10,0"
-                             Text="Til?"
-                             />
+                <!-- 2) Field labels -->
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="Fra (IATA)" Margin="5,0"
+                           FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                <TextBlock Grid.Row="1" Grid.Column="1" Text="Til (IATA)" Margin="5,0"
+                           FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                <TextBlock Grid.Row="1" Grid.Column="2" Text="Afrejsedato" Margin="5,0"
+                           FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                <TextBlock Grid.Row="1" Grid.Column="3" Text="Returdato" Margin="5,0"
+                           FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                <TextBlock Grid.Row="1" Grid.Column="4" Text="Rejsende" Margin="5,0"
+                           FontWeight="SemiBold" HorizontalAlignment="Center"/>
 
-                </StackPanel >
-                <StackPanel Orientation="Horizontal">
-                    <Label Content="Udrejse dato:"
-                       Height="30"
-                       />
-                    <DatePicker x:Name="datePickerOutbound"
-                                Height="30"
-                                Padding="5" Cursor="Hand" Text="Udrejse"
-                            />
-                    <Label Content="Hjemrejse dato:"
-                           Height="30"
-                           />
-                    <DatePicker x:Name="datePickerInbound"
-                                Height="30"
-                                Padding="5" Cursor="Hand" Text="Hjemrejse"/>
-                </StackPanel>
+                <!-- 3) Input controls -->
+                <!-- From -->
+                <Border Grid.Row="2" Grid.Column="0"
+                        CornerRadius="4" BorderBrush="#CCC" BorderThickness="1"
+                        Margin="5,4">
+                    <TextBox x:Name="originTextbox"
+                             MaxLength="3"
+                             VerticalContentAlignment="Center"
+                             ToolTip="Enter 3-letter IATA code"
+                             HorizontalAlignment="Stretch"
+                             Padding="8,4"/>
+                </Border>
 
-            </StackPanel>
+                <!-- To -->
+                <Border Grid.Row="2" Grid.Column="1"
+                        CornerRadius="4" BorderBrush="#CCC" BorderThickness="1"
+                        Margin="5,4">
+                    <TextBox x:Name="destinationTextbox"
+                             MaxLength="3"
+                             VerticalContentAlignment="Center"
+                             ToolTip="Enter 3-letter IATA code"
+                             HorizontalAlignment="Stretch"
+                             Padding="8,4"/>
+                </Border>
+
+                <!-- Outbound Date -->
+                <Border Grid.Row="2" Grid.Column="2"
+                        CornerRadius="4" BorderBrush="#CCC" BorderThickness="1"
+                        Margin="5,4">
+                    <DatePicker x:Name="OutboundDate"
+                                SelectedDate="{Binding DepartureDate}"
+                                BorderThickness="0"
+                                Background="Transparent"
+                                HorizontalAlignment="Stretch"
+                                Padding="8,4"/>
+                </Border>
+
+                <!-- Return Date (disabled if one-way) -->
+                <Border Grid.Row="2" Grid.Column="3"
+                        CornerRadius="4" BorderBrush="#CCC" BorderThickness="1"
+                        Margin="5,4">
+                    <DatePicker x:Name="ReturnDate"
+                                SelectedDate="{Binding ReturnDate}"
+                                BorderThickness="0"
+                                Background="Transparent"
+                                IsEnabled="{Binding ElementName=RoundTripTab, Path=IsSelected}"
+                                HorizontalAlignment="Stretch"
+                                Padding="8,4"/>
+                </Border>
+
+                <!-- Passenger count -->
+                <Border Grid.Row="2" Grid.Column="4"
+                        CornerRadius="4" BorderBrush="#CCC" BorderThickness="1"
+                        Margin="5,4">
+                    <ComboBox x:Name="PassengerCountBox"
+                              SelectedValue="{Binding PassengerCount}"
+                              BorderThickness="0"
+                              Background="Transparent"
+                              HorizontalAlignment="Stretch"
+                              Padding="8,4">
+                        <ComboBoxItem Content="1" />
+                        <ComboBoxItem Content="2" />
+                        <ComboBoxItem Content="3" />
+                        <ComboBoxItem Content="4" />
+                        <ComboBoxItem Content="5" />
+                    </ComboBox>
+                </Border>
+
+                <!-- 4) Search button spans all columns -->
+                <Button x:Name="btnGetFlights"
+                        Grid.Row="3" Grid.ColumnSpan="5"
+                        Content="Søg fly"
+                        Height="40"
+                        Margin="5,18,5,-6"
+                        Background="#0077CC"
+                        Foreground="White"
+                        FontWeight="Bold"
+                        Click="btnGetFlights_Click"/>
+            </Grid>
+
         </Border>
 
         <ListBox ItemsSource="{Binding Flights}"
@@ -129,8 +212,8 @@
                  BorderThickness="0"
                  Padding="0"
                  Margin="0">
-                 <ListBox.ItemTemplate>
-                 <DataTemplate>
+            <ListBox.ItemTemplate>
+                <DataTemplate>
                     <Border CornerRadius="6"
                             BorderBrush="#CCC"
                             BorderThickness="1"
@@ -139,7 +222,8 @@
                             Padding="12"
                             Margin="0,0,0,8"
                             Background="White"
-                            SnapsToDevicePixels="True">
+                            SnapsToDevicePixels="True"
+                            >
                         <Grid VerticalAlignment="Center">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
@@ -148,6 +232,8 @@
                                 <!-- Airline & flight# -->
                                 <ColumnDefinition Width="2*"/>
                                 <!-- Times & airports -->
+                                <ColumnDefinition Width="Auto"/>
+                                <!-- Connections -->
                                 <ColumnDefinition Width="Auto"/>
                                 <!-- Duration -->
                                 <ColumnDefinition Width="Auto"/>
@@ -173,34 +259,36 @@
                             <!-- 3) Departure & arrival -->
                             <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                                 <StackPanel Orientation="Vertical">
-                                    <TextBlock FontWeight="SemiBold" Text="{Binding DepartureAirport.id}"/>
+                                    <TextBlock FontWeight="SemiBold" Text="{Binding DepartureAirport.Id}"/>
                                     <TextBlock Text="{Binding DepartureUtc, StringFormat={}{0:HH:mm}}" Foreground="#444"/>
                                 </StackPanel>
                                 <StackPanel Orientation="Vertical">
-                                    <TextBlock FontWeight="SemiBold" Text="{Binding ArrivalAirport.id}"/>
-                                    <TextBlock Text="{Binding ArrivalUtc, StringFormat={}{0:HH:mm}}" Foreground="#444"/>
+                                    <TextBlock FontWeight="SemiBold" Text="{Binding ArrivalAirport.Id}"/>
+                                    <TextBlock Text="{Binding ArrivalUtc, StringFormat={} - {0:HH:mm}}" Foreground="#444"/>
                                 </StackPanel>
                             </StackPanel>
-
-                            <!-- 4) Duration -->
+                            
+                            <!-- 4 Connections-->
                             <TextBlock Grid.Column="3"
                                        VerticalAlignment="Center"
                                        Margin="24,0"
-                                        FontSize="12">
-                                <TextBlock.Text>
-                                    <MultiBinding Converter="{StaticResource DurationConverter}">
-                                        <Binding Path="DepartureUtc"/>
-                                        <Binding Path="ArrivalUtc"/>
-                                    </MultiBinding>
-                                </TextBlock.Text>
+                                       FontSize="12"
+                                       Text="{Binding Layovers.Count, Converter={StaticResource StopsConverter}}" />
+                            
+                            <!-- 5) Duration -->
+                            <TextBlock Grid.Column="4"
+                                       VerticalAlignment="Center"
+                                       Margin="24,0"
+                                       FontSize="12"
+                                       Text="{Binding TotalDuration, Converter={StaticResource MinToHours}}">
                             </TextBlock>
 
-                            <!-- 5) Price + button -->
-                            <StackPanel Grid.Column="4"
+                            <!-- 6) Price + button -->
+                            <StackPanel Grid.Column="5"
                                         Orientation="Horizontal"
                                         VerticalAlignment="Center"
                                         Margin="24,0,0,0">
-                                <TextBlock Text="{Binding Price, StringFormat={}{0:C}}"
+                                <TextBlock Text="{Binding Price, StringFormat={}{0:N0} kr}"
                                            FontWeight="Bold"
                                            FontSize="16"
                                            VerticalAlignment="Center"/>
