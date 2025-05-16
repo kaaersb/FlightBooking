@@ -148,5 +148,80 @@ namespace GUI
 
         }
 
+        private void BookFlight_Click(object sender, RoutedEventArgs e)
+        {
+            if (currentUser == null)
+            {
+                var result = MessageBox.Show("Du skal være logget ind for at booke. Har du en bruger?",
+                                             "Log ind påkrævet",
+                                             MessageBoxButton.YesNoCancel,
+                                             MessageBoxImage.Question);
+                if (result == MessageBoxResult.Yes)
+                {
+                    LoginView loginView = new LoginView { Owner = this };
+                    if (loginView.ShowDialog() != true)
+                    {
+                        return;
+                    }
+                    currentUser = loginView.LoggedInUser;
+                    ApplyUserToUI();
+                }
+                else if (result == MessageBoxResult.No)
+                {
+                    CreateUserView createUserView = new CreateUserView { Owner = this };
+                    if(createUserView.ShowDialog() != true)
+                    {
+                        return;
+                    }
+                    User newUser = new User
+                    {
+                        UserId = Guid.NewGuid(),
+                        Name = createUserView.Name,
+                        Email = createUserView.Email,
+                        Password = createUserView.Password
+                    };
+
+                    new UserRepository(Config.ConnectionString).Add(newUser);
+                    currentUser = newUser;
+                    ApplyUserToUI();
+
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+            if((sender as FrameworkElement)?.DataContext is not Flight flight) {
+
+                return;
+            }
+
+            Booking booking = new Booking
+            {
+                BookingId = Guid.NewGuid(),
+                UserId = currentUser.UserId,
+                OutboundFlightId = flight.FlightId,
+                ReturnFlightId = null,
+                BookingDate = DateTime.Now,
+                OutboundFlight = flight,
+                ReturnFlight = null,
+                User = currentUser
+            };
+
+            try
+            {
+                BookingRepository bookingRepository = new BookingRepository(Config.ConnectionString);
+                bookingRepository.Add(booking);
+                MessageBox.Show("Booking gennemført!", "Succes", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Booking kunne ikke gennemføres: {ex.Message}", "Fejl", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+
+        }
+
+
     }
 }
