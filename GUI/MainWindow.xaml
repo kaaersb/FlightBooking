@@ -256,18 +256,36 @@
                                            FontSize="12"/>
                             </StackPanel>
 
-                            <!-- 3) Departure & arrival -->
-                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                                <StackPanel Orientation="Vertical">
-                                    <TextBlock FontWeight="SemiBold" Text="{Binding DepartureAirport.Id}"/>
-                                    <TextBlock Text="{Binding DepartureUtc, StringFormat={}{0:HH:mm}}" Foreground="#444"/>
-                                </StackPanel>
-                                <StackPanel Orientation="Vertical">
-                                    <TextBlock FontWeight="SemiBold" Text="{Binding ArrivalAirport.Id}"/>
-                                    <TextBlock Text="{Binding ArrivalUtc, StringFormat={} - {0:HH:mm}}" Foreground="#444"/>
-                                </StackPanel>
-                            </StackPanel>
-                            
+                            <!-- 3) Departure & arrival for each segment -->
+                            <ItemsControl Grid.Column="2" ItemsSource="{Binding FlightSegments}">
+                                <!-- make the items flow in a horizontal line -->
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <!-- each segment: two vertical blocks side by side -->
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,24,0"  VerticalAlignment="Center">
+                                            <!-- Departure -->
+                                            <StackPanel Orientation="Vertical">
+                                                <TextBlock FontWeight="SemiBold" Text="{Binding DepartureAirport.Id}"/>
+                                                <TextBlock Text="{Binding DepartureAirport.Time}" Foreground="#444"/>
+                                            </StackPanel>
+
+                                            <!-- arrow or separator -->
+                                            <TextBlock Text=" → " VerticalAlignment="Center" Margin="8,0"/>
+                                            <!-- Arrival -->
+                                            <StackPanel Orientation="Vertical">
+                                                <TextBlock FontWeight="SemiBold" Text="{Binding ArrivalAirport.Id}"/>
+                                                <TextBlock Text="{Binding ArrivalAirport.Time}" Foreground="#444"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
                             <!-- 4 Connections-->
                             <TextBlock Grid.Column="3"
                                        VerticalAlignment="Center"
