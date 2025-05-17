@@ -159,6 +159,7 @@ namespace FlightBooking.Core.Data
             const string sql = "SELECT Password FROM Users WHERE Email = @Email";
 
             using var conn = new SqlConnection(_connectionString);
+            Console.WriteLine(_connectionString);
             conn.Open();
 
             using var cmd = new SqlCommand(sql, conn);

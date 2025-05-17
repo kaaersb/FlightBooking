@@ -21,6 +21,10 @@ namespace GUI
 
         public ObservableCollection<Flight> Flights { get; } = new ObservableCollection<Flight>();
 
+        private Flight? tempOutboundFlight;
+
+        private bool awaitingReturn = false;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -148,7 +152,7 @@ namespace GUI
 
         }
 
-        private void BookFlight_Click(object sender, RoutedEventArgs e)
+        private async void BookFlight_Click(object sender, RoutedEventArgs e)
         {
             if (currentUser == null)
             {
@@ -192,12 +196,110 @@ namespace GUI
                 }
             }
 
-            if((sender as FrameworkElement)?.DataContext is not Flight flight) {
+            if((sender as FrameworkElement)?.DataContext is not Flight selectedFlight) {
 
                 return;
             }
 
-            Booking booking = new Booking
+            bool isRoundTrip = RoundTripTab.IsSelected;
+            int passengerCount = 1; // default
+            if (PassengerCountBox.SelectedItem is ComboBoxItem item &&
+                int.TryParse(item.Content.ToString(), out var pc))
+            {
+                passengerCount = pc;
+            }
+            else
+            {
+                MessageBox.Show("Vælg antal rejsende");
+                return;
+            }
+
+            if (!isRoundTrip)
+            {
+                SaveSingleFlightBooking(selectedFlight);
+                return;
+            }
+
+            if(!awaitingReturn)
+            {
+                tempOutboundFlight = selectedFlight;
+                awaitingReturn = true;
+
+                if(!ReturnDate.SelectedDate.HasValue)
+                {
+                    MessageBox.Show("Vælg en retur dato");
+                    return;
+                }
+
+                DateTime returnDate = ReturnDate.SelectedDate.Value;
+
+                try
+                {
+                    IEnumerable<Flight> returnResults = await flightRepository.SearchAsync(selectedFlight.Destination, 
+                                                                                           selectedFlight.Origin,
+                                                                                           returnDate, 
+                                                                                           null, 
+                                                                                           passengerCount);
+
+                    Flights.Clear();
+                    foreach(Flight flight in returnResults)
+                    {
+                        Flights.Add(flight);
+                    }
+
+                    MessageBox.Show("Vælg nu dit retur-fly i listen og tryk på 'Book' igen",
+                                    "Vælg returfly",
+                                    MessageBoxButton.OK,
+                                    MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Kunne ikke hente returfly: {ex.Message}");
+                    awaitingReturn = false;
+                    tempOutboundFlight = null;
+                }
+
+                return;
+            }
+
+            if(awaitingReturn && tempOutboundFlight != null)
+            {
+                Flight outbound = tempOutboundFlight;
+                Flight inbound = selectedFlight;
+
+                Booking booking = new Booking
+                {
+                    BookingId = Guid.NewGuid(),
+                    UserId = currentUser.UserId,
+                    OutboundFlightId = outbound.FlightId,
+                    ReturnFlightId = inbound.FlightId,
+                    BookingDate = DateTime.Now,
+                    OutboundFlight = outbound,
+                    ReturnFlight = inbound,
+                    User = currentUser
+                };
+
+                try
+                {
+                    BookingRepository bookingRepository = new BookingRepository(Config.ConnectionString);
+                    bookingRepository.Add(booking);
+                    MessageBox.Show("Booking gennemført!", "Succes", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Booking kunne ikke gennemføres: {ex.Message}", "Fejl", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+                finally
+                {
+                    awaitingReturn = false;
+                    tempOutboundFlight = null;
+                }
+            }
+        }
+
+        private void SaveSingleFlightBooking(Flight flight)
+        {
+            var booking = new Booking
             {
                 BookingId = Guid.NewGuid(),
                 UserId = currentUser.UserId,
@@ -208,20 +310,15 @@ namespace GUI
                 ReturnFlight = null,
                 User = currentUser
             };
-
             try
             {
-                BookingRepository bookingRepository = new BookingRepository(Config.ConnectionString);
-                bookingRepository.Add(booking);
+                new BookingRepository(Config.ConnectionString).Add(booking);
                 MessageBox.Show("Booking gennemført!", "Succes", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Booking kunne ikke gennemføres: {ex.Message}", "Fejl", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Booking fejlede: {ex.Message}", "Fejl", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-
         }
-
-
     }
 }

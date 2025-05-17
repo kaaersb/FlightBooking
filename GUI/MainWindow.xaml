@@ -91,7 +91,8 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- 1) Round‐trip / One‐way tabs -->
-                <TabControl Grid.Row="0" Grid.ColumnSpan="5"
+                <TabControl x:Name="FlightTabControl"
+                            Grid.Row="0" Grid.ColumnSpan="5"
                             Background="Transparent" BorderThickness="0"
                             Margin="0,0,0,16">
                     <TabItem Header="Retur tur" IsSelected="True" x:Name="RoundTripTab">
@@ -310,7 +311,7 @@
                                            FontWeight="Bold"
                                            FontSize="16"
                                            VerticalAlignment="Center"/>
-                                <Button Content="Vælg"
+                                <Button Content="Book"
                                         Click="BookFlight_Click"
                                         Margin="12,0,0,0"
                                         Padding="12,4"
