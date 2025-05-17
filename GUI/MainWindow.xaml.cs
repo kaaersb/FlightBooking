@@ -149,7 +149,9 @@ namespace GUI
 
         private void OpenProfile_Click(object sender, RoutedEventArgs e)
         {
-
+            ProfileView profileView = new ProfileView(currentUser);
+            profileView.Owner = this;
+            profileView.ShowDialog();
         }
 
         private async void BookFlight_Click(object sender, RoutedEventArgs e)
