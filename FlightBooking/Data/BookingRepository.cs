@@ -66,9 +66,27 @@ namespace FlightBooking.Core.Data
         public IEnumerable<Booking> GetByUserId(Guid userId)
         {
             const string sql = @"
-                SELECT BookingId, UserId
-                  FROM Bookings
-                 WHERE UserId = @UserId";
+        SELECT
+            b.BookingId,
+            b.UserId,
+            b.BookingDate,
+
+            ofl.FlightId      AS OutboundFlight_FlightId,
+            ofl.FlightNumber  AS OutboundFlight_FlightNumber,
+            ofl.Origin        AS OutboundFlight_Origin,
+            ofl.Destination   AS OutboundFlight_Destination,
+
+            rfl.FlightId      AS ReturnFlight_FlightId,
+            rfl.FlightNumber  AS ReturnFlight_FlightNumber,
+            rfl.Origin        AS ReturnFlight_Origin,
+            rfl.Destination   AS ReturnFlight_Destination
+
+        FROM Bookings b
+        LEFT JOIN Flights ofl
+          ON b.OutboundFlightId = ofl.FlightId
+        LEFT JOIN Flights rfl
+          ON b.ReturnFlightId = rfl.FlightId
+        WHERE b.UserId = @UserId";
 
             using var conn = new SqlConnection(_connectionString);
             conn.Open();
@@ -76,15 +94,57 @@ namespace FlightBooking.Core.Data
             cmd.Parameters.AddWithValue("@UserId", userId);
 
             using var r = cmd.ExecuteReader();
+            // cache ordinals so we don’t call GetOrdinal in each loop
+            var iBookingId = r.GetOrdinal("BookingId");
+            var iUserId = r.GetOrdinal("UserId");
+            var iDate = r.GetOrdinal("BookingDate");
+            var iOfId = r.GetOrdinal("OutboundFlight_FlightId");
+            var iOfNumber = r.GetOrdinal("OutboundFlight_FlightNumber");
+            var iOfOrigin = r.GetOrdinal("OutboundFlight_Origin");
+            var iOfDest = r.GetOrdinal("OutboundFlight_Destination");
+            var iRfId = r.GetOrdinal("ReturnFlight_FlightId");
+            var iRfNumber = r.GetOrdinal("ReturnFlight_FlightNumber");
+            var iRfOrigin = r.GetOrdinal("ReturnFlight_Origin");
+            var iRfDest = r.GetOrdinal("ReturnFlight_Destination");
+
             while (r.Read())
             {
-                yield return new Booking
+                // Mandatory fields
+                var booking = new Booking
                 {
-                    BookingId = r.GetGuid(0),
-                    UserId = r.GetGuid(1)
+                    BookingId = r.GetGuid(iBookingId),
+                    UserId = r.GetGuid(iUserId),
+                    BookingDate = r.GetDateTime(iDate),
                 };
+
+                // Outbound flight: we *expect* this not to be null, but still guard it
+                if (!r.IsDBNull(iOfId))
+                {
+                    booking.OutboundFlight = new Flight
+                    {
+                        FlightId = r.GetGuid(iOfId),
+                        FlightNumber = r.GetString(iOfNumber),
+                        Origin = r.GetString(iOfOrigin),
+                        Destination = r.GetString(iOfDest)
+                    };
+                }
+
+                // Return flight: stays null if user didn't book a return
+                if (!r.IsDBNull(iRfId))
+                {
+                    booking.ReturnFlight = new Flight
+                    {
+                        FlightId = r.GetGuid(iRfId),
+                        FlightNumber = r.GetString(iRfNumber),
+                        Origin = r.GetString(iRfOrigin),
+                        Destination = r.GetString(iRfDest)
+                    };
+                }
+
+                yield return booking;
             }
         }
+
 
         public IEnumerable<Booking> GetAll()
         {
