@@ -9,7 +9,7 @@ namespace FlightBooking.Core.Data
     {
         private readonly string _connectionString;
         private readonly HttpClient _http = new();
-        private const string ApiKey = "z4qrWATZSi5qsEiQsL2arX6g";
+        private const string ApiKey = "eAm6C5AHPysUc3V2KwNCxuL8";
         public FlightRepository() { }
 
         public FlightRepository(string connectionString)

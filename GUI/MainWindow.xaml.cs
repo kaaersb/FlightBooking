@@ -286,6 +286,9 @@ namespace GUI
                 try
                 {
                     BookingRepository bookingRepository = new BookingRepository(Config.ConnectionString);
+                    FlightRepository flightRepository = new FlightRepository(Config.ConnectionString);
+                    flightRepository.Add(outbound);
+                    flightRepository.Add(inbound);
                     bookingRepository.Add(booking);
                     MessageBox.Show("Booking gennemført!", "Succes", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
@@ -317,6 +320,7 @@ namespace GUI
             try
             {
                 new BookingRepository(Config.ConnectionString).Add(booking);
+                new FlightRepository(Config.ConnectionString).Add(flight);
                 MessageBox.Show("Booking gennemført!", "Succes", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)

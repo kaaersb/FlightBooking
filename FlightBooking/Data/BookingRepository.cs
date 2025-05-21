@@ -71,21 +71,23 @@ namespace FlightBooking.Core.Data
             b.UserId,
             b.BookingDate,
 
-            ofl.FlightId      AS OutboundFlight_FlightId,
-            ofl.FlightNumber  AS OutboundFlight_FlightNumber,
-            ofl.Origin        AS OutboundFlight_Origin,
-            ofl.Destination   AS OutboundFlight_Destination,
+            ofl.FlightId      AS Outbound_FlightId,
+            ofl.FlightNumber  AS Outbound_FlightNumber,
+            ofl.Origin        AS Outbound_Origin,
+            ofl.Destination   AS Outbound_Destination,
+            ofl.DepartureUtc  AS Outbound_DepartureUtc,
 
-            rfl.FlightId      AS ReturnFlight_FlightId,
-            rfl.FlightNumber  AS ReturnFlight_FlightNumber,
-            rfl.Origin        AS ReturnFlight_Origin,
-            rfl.Destination   AS ReturnFlight_Destination
+            rfl.FlightId      AS Return_FlightId,
+            rfl.FlightNumber  AS Return_FlightNumber,
+            rfl.Origin        AS Return_Origin,
+            rfl.Destination   AS Return_Destination,
+            rfl.DepartureUtc  AS Return_DepartureUtc
 
         FROM Bookings b
         LEFT JOIN Flights ofl
           ON b.OutboundFlightId = ofl.FlightId
         LEFT JOIN Flights rfl
-          ON b.ReturnFlightId = rfl.FlightId
+          ON b.ReturnFlightId   = rfl.FlightId
         WHERE b.UserId = @UserId";
 
             using var conn = new SqlConnection(_connectionString);
@@ -94,56 +96,66 @@ namespace FlightBooking.Core.Data
             cmd.Parameters.AddWithValue("@UserId", userId);
 
             using var r = cmd.ExecuteReader();
-            // cache ordinals so we don’t call GetOrdinal in each loop
-            var iBookingId = r.GetOrdinal("BookingId");
-            var iUserId = r.GetOrdinal("UserId");
-            var iDate = r.GetOrdinal("BookingDate");
-            var iOfId = r.GetOrdinal("OutboundFlight_FlightId");
-            var iOfNumber = r.GetOrdinal("OutboundFlight_FlightNumber");
-            var iOfOrigin = r.GetOrdinal("OutboundFlight_Origin");
-            var iOfDest = r.GetOrdinal("OutboundFlight_Destination");
-            var iRfId = r.GetOrdinal("ReturnFlight_FlightId");
-            var iRfNumber = r.GetOrdinal("ReturnFlight_FlightNumber");
-            var iRfOrigin = r.GetOrdinal("ReturnFlight_Origin");
-            var iRfDest = r.GetOrdinal("ReturnFlight_Destination");
+
+            // Cache ordinals for speed and clarity
+            var idx = new
+            {
+                BookingId = r.GetOrdinal("BookingId"),
+                UserId = r.GetOrdinal("UserId"),
+                BookingDate = r.GetOrdinal("BookingDate"),
+
+                OfId = r.GetOrdinal("Outbound_FlightId"),
+                OfNumber = r.GetOrdinal("Outbound_FlightNumber"),
+                OfOrigin = r.GetOrdinal("Outbound_Origin"),
+                OfDest = r.GetOrdinal("Outbound_Destination"),
+                OfDepart = r.GetOrdinal("Outbound_DepartureUtc"),
+
+                RfId = r.GetOrdinal("Return_FlightId"),
+                RfNumber = r.GetOrdinal("Return_FlightNumber"),
+                RfOrigin = r.GetOrdinal("Return_Origin"),
+                RfDest = r.GetOrdinal("Return_Destination"),
+                RfDepart = r.GetOrdinal("Return_DepartureUtc"),
+            };
 
             while (r.Read())
             {
-                // Mandatory fields
                 var booking = new Booking
                 {
-                    BookingId = r.GetGuid(iBookingId),
-                    UserId = r.GetGuid(iUserId),
-                    BookingDate = r.GetDateTime(iDate),
+                    BookingId = r.GetGuid(idx.BookingId),
+                    UserId = r.GetGuid(idx.UserId),
+                    BookingDate = r.GetDateTime(idx.BookingDate)
                 };
 
-                // Outbound flight: we *expect* this not to be null, but still guard it
-                if (!r.IsDBNull(iOfId))
+                // Outbound flight (guard against NULL FK)
+                if (!r.IsDBNull(idx.OfId))
                 {
                     booking.OutboundFlight = new Flight
                     {
-                        FlightId = r.GetGuid(iOfId),
-                        FlightNumber = r.GetString(iOfNumber),
-                        Origin = r.GetString(iOfOrigin),
-                        Destination = r.GetString(iOfDest)
+                        FlightId = r.GetGuid(idx.OfId),
+                        FlightNumber = r.GetString(idx.OfNumber),
+                        Origin = r.GetString(idx.OfOrigin),
+                        Destination = r.GetString(idx.OfDest),
+                        DepartureUtc = r.GetDateTime(idx.OfDepart)
                     };
                 }
 
-                // Return flight: stays null if user didn't book a return
-                if (!r.IsDBNull(iRfId))
+                // Return flight (optional)
+                if (!r.IsDBNull(idx.RfId))
                 {
                     booking.ReturnFlight = new Flight
                     {
-                        FlightId = r.GetGuid(iRfId),
-                        FlightNumber = r.GetString(iRfNumber),
-                        Origin = r.GetString(iRfOrigin),
-                        Destination = r.GetString(iRfDest)
+                        FlightId = r.GetGuid(idx.RfId),
+                        FlightNumber = r.GetString(idx.RfNumber),
+                        Origin = r.GetString(idx.RfOrigin),
+                        Destination = r.GetString(idx.RfDest),
+                        DepartureUtc = r.GetDateTime(idx.RfDepart)
                     };
                 }
 
                 yield return booking;
             }
         }
+
 
 
         public IEnumerable<Booking> GetAll()

@@ -33,7 +33,7 @@ namespace GUI.Views
         private void LoadBookings()
         {
             BookingRepository bookingRepository = new BookingRepository(Config.ConnectionString);
-            IEnumerable<Booking> bookings = bookingRepository.GetByUserId(user.UserId);
+            var bookings = bookingRepository.GetByUserId(user.UserId).ToList();
             UserBookings.ItemsSource = bookings;
         }
 
