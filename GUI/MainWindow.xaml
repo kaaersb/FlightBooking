@@ -52,9 +52,15 @@
 
             <Button x:Name="ProfileButton"
                     Visibility="Collapsed"
-                    Width="32" Height="32"
-                    Click="OpenProfile_Click">
+                    Width="75" Height="32"
+                    Click="OpenProfile_Click"
+                    Margin="10,10,10,10">
+            </Button>
 
+            <Button x:Name="LogoutButton"
+                    Visibility="Collapsed"
+                    Width="75" Height="32"
+                    Click="LogoutButton_Click" >
             </Button>
 
         </StackPanel>

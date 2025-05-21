@@ -143,8 +143,10 @@ namespace GUI
             createUser.Visibility = Visibility.Collapsed;
 
             ProfileButton.Visibility = Visibility.Visible;
+            LogoutButton.Visibility = Visibility.Visible;
             WelcomeText.Text = "Welcome, " + currentUser.Name;
             ProfileButton.Content = currentUser.Name;
+            LogoutButton.Content = "Logout";
         }
 
         private void OpenProfile_Click(object sender, RoutedEventArgs e)
@@ -321,6 +323,18 @@ namespace GUI
             {
                 MessageBox.Show($"Booking fejlede: {ex.Message}", "Fejl", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        private void LogoutButton_Click(object sender, RoutedEventArgs e)
+        {
+            currentUser = null;
+            LogoutButton.Visibility = Visibility.Collapsed;
+            ProfileButton.Visibility = Visibility.Collapsed;
+
+            createUser.Visibility = Visibility.Visible;
+            login.Visibility = Visibility.Visible;
+            WelcomeText.Text = "Welcome";
+            ProfileButton.Content = "User";
         }
     }
 }
