@@ -16,8 +16,8 @@ namespace FlightBooking.Core.Data
         public void Add(Booking booking)
         {
             const string sql = @"
-                INSERT INTO Bookings (BookingId, UserId, OutboundFlightId, ReturnFlightId, BookingDate)
-                VALUES (@BookingId, @UserId, @OutboundFlightId, @ReturnFlightId, @BookingDate)";
+                INSERT INTO Bookings (BookingId, UserId, OutboundFlightId, ReturnFlightId, BookingDate, TotalPrice)
+                VALUES (@BookingId, @UserId, @OutboundFlightId, @ReturnFlightId, @BookingDate, @TotalPrice)";
 
             using var conn = new SqlConnection(_connectionString);
             conn.Open();
@@ -29,6 +29,7 @@ namespace FlightBooking.Core.Data
             cmd.Parameters.Add("@ReturnFlightId", SqlDbType.UniqueIdentifier).Value =
                 (object?)booking.ReturnFlightId ?? DBNull.Value;
             cmd.Parameters.Add("@BookingDate", SqlDbType.DateTime2).Value = booking.BookingDate;
+            cmd.Parameters.AddWithValue("@TotalPrice", booking.TotalPrice);
             cmd.ExecuteNonQuery();
         }
 
@@ -66,29 +67,31 @@ namespace FlightBooking.Core.Data
         public IEnumerable<Booking> GetByUserId(Guid userId)
         {
             const string sql = @"
-        SELECT
-            b.BookingId,
-            b.UserId,
-            b.BookingDate,
+SELECT
+  b.BookingId,
+  b.UserId,
+  b.BookingDate,
+  b.TotalPrice,
 
-            ofl.FlightId      AS Outbound_FlightId,
-            ofl.FlightNumber  AS Outbound_FlightNumber,
-            ofl.Origin        AS Outbound_Origin,
-            ofl.Destination   AS Outbound_Destination,
-            ofl.DepartureUtc  AS Outbound_DepartureUtc,
+  ofl.FlightId      AS Outbound_FlightId,
+  ofl.FlightNumber  AS Outbound_FlightNumber,
+  ofl.Origin        AS Outbound_Origin,
+  ofl.Destination   AS Outbound_Destination,
+  ofl.DepartureUtc  AS Outbound_DepartureUtc,
 
-            rfl.FlightId      AS Return_FlightId,
-            rfl.FlightNumber  AS Return_FlightNumber,
-            rfl.Origin        AS Return_Origin,
-            rfl.Destination   AS Return_Destination,
-            rfl.DepartureUtc  AS Return_DepartureUtc
+  rfl.FlightId      AS Return_FlightId,
+  rfl.FlightNumber  AS Return_FlightNumber,
+  rfl.Origin        AS Return_Origin,
+  rfl.Destination   AS Return_Destination,
+  rfl.DepartureUtc  AS Return_DepartureUtc
 
-        FROM Bookings b
-        LEFT JOIN Flights ofl
-          ON b.OutboundFlightId = ofl.FlightId
-        LEFT JOIN Flights rfl
-          ON b.ReturnFlightId   = rfl.FlightId
-        WHERE b.UserId = @UserId";
+FROM Bookings b
+LEFT JOIN Flights ofl
+  ON b.OutboundFlightId = ofl.FlightId
+LEFT JOIN Flights rfl
+  ON b.ReturnFlightId   = rfl.FlightId
+WHERE b.UserId = @UserId;
+";
 
             using var conn = new SqlConnection(_connectionString);
             conn.Open();
@@ -103,6 +106,7 @@ namespace FlightBooking.Core.Data
                 BookingId = r.GetOrdinal("BookingId"),
                 UserId = r.GetOrdinal("UserId"),
                 BookingDate = r.GetOrdinal("BookingDate"),
+                TotalPrice = r.GetOrdinal("TotalPrice"),
 
                 OfId = r.GetOrdinal("Outbound_FlightId"),
                 OfNumber = r.GetOrdinal("Outbound_FlightNumber"),
@@ -112,9 +116,9 @@ namespace FlightBooking.Core.Data
 
                 RfId = r.GetOrdinal("Return_FlightId"),
                 RfNumber = r.GetOrdinal("Return_FlightNumber"),
-                RfOrigin = r.GetOrdinal("Return_Origin"),
+                RfOrig = r.GetOrdinal("Return_Origin"),
                 RfDest = r.GetOrdinal("Return_Destination"),
-                RfDepart = r.GetOrdinal("Return_DepartureUtc"),
+                RfDept = r.GetOrdinal("Return_DepartureUtc"),
             };
 
             while (r.Read())
@@ -123,12 +127,12 @@ namespace FlightBooking.Core.Data
                 {
                     BookingId = r.GetGuid(idx.BookingId),
                     UserId = r.GetGuid(idx.UserId),
-                    BookingDate = r.GetDateTime(idx.BookingDate)
+                    BookingDate = r.GetDateTime(idx.BookingDate),
+                    TotalPrice = r.GetDecimal(r.GetOrdinal("TotalPrice"))
                 };
 
-                // Outbound flight (guard against NULL FK)
+                // outbound
                 if (!r.IsDBNull(idx.OfId))
-                {
                     booking.OutboundFlight = new Flight
                     {
                         FlightId = r.GetGuid(idx.OfId),
@@ -137,24 +141,22 @@ namespace FlightBooking.Core.Data
                         Destination = r.GetString(idx.OfDest),
                         DepartureUtc = r.GetDateTime(idx.OfDepart)
                     };
-                }
 
-                // Return flight (optional)
+                // *return*
                 if (!r.IsDBNull(idx.RfId))
-                {
                     booking.ReturnFlight = new Flight
                     {
                         FlightId = r.GetGuid(idx.RfId),
                         FlightNumber = r.GetString(idx.RfNumber),
-                        Origin = r.GetString(idx.RfOrigin),
+                        Origin = r.GetString(idx.RfOrig),
                         Destination = r.GetString(idx.RfDest),
-                        DepartureUtc = r.GetDateTime(idx.RfDepart)
+                        DepartureUtc = r.GetDateTime(idx.RfDept)
                     };
-                }
 
                 yield return booking;
             }
         }
+
 
 
 

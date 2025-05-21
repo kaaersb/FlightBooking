@@ -16,10 +16,140 @@
         <ListView x:Name="UserBookings">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="Flight No." DisplayMemberBinding="{Binding OutboundFlight.FlightNumber}" Width="80"/>
-                    <GridViewColumn Header="From" DisplayMemberBinding="{Binding OutboundFlight.Origin}" Width="100"/>
-                    <GridViewColumn Header="To" DisplayMemberBinding="{Binding OutboundFlight.Destination}" Width="100"/>
-                    <GridViewColumn Header="Date" DisplayMemberBinding="{Binding OutboundFlight.DepartureUtc, StringFormat=d}" Width="100"/>
+                    <!-- Flight numbers -->
+                    <GridViewColumn Header="Flight No.">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <!-- Outbound flight # always visible -->
+                                    <TextBlock Text="{Binding OutboundFlight.FlightNumber}" />
+                                    <!-- Separator for return leg -->
+                                    <TextBlock Text=" ↔ ">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ReturnFlight}" Value="{x:Null}">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                    <!-- Return flight # only when present -->
+                                    <TextBlock Text="{Binding ReturnFlight.FlightNumber}">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ReturnFlight}" Value="{x:Null}">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </StackPanel>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+
+                    <!-- Origins -->
+                    <GridViewColumn Header="From">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding OutboundFlight.Origin}" />
+                                    <TextBlock Text=" / ">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ReturnFlight}" Value="{x:Null}">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                    <TextBlock Text="{Binding ReturnFlight.Origin}">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ReturnFlight}" Value="{x:Null}">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </StackPanel>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+
+                    <!-- Destinations -->
+                    <GridViewColumn Header="To">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding OutboundFlight.Destination}" />
+                                    <TextBlock Text=" / ">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ReturnFlight}" Value="{x:Null}">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                    <TextBlock Text="{Binding ReturnFlight.Destination}">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ReturnFlight}" Value="{x:Null}">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </StackPanel>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+
+                    <!-- Departures -->
+                    <GridViewColumn Header="Date">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding OutboundFlight.DepartureUtc, StringFormat=d}" />
+                                    <TextBlock Text="{Binding ReturnFlight.DepartureUtc, StringFormat=d}">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ReturnFlight}" Value="{x:Null}">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </StackPanel>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+
+                    <!-- Total price (once!) -->
+                    <GridViewColumn Header="Total price"
+                                     DisplayMemberBinding="{Binding TotalPrice, StringFormat={}{0:N0} kr}" />
                 </GridView>
             </ListView.View>
         </ListView>

@@ -12,6 +12,7 @@ namespace FlightBooking.Core.Models
         public Flight? ReturnFlight { get; set; }
         public User User { get; set; }
         public DateTime BookingDate { get; set; }
+        public decimal TotalPrice { get; set; }
 
     }
 }

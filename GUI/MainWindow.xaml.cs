@@ -280,6 +280,7 @@ namespace GUI
                     BookingDate = DateTime.Now,
                     OutboundFlight = outbound,
                     ReturnFlight = inbound,
+                    TotalPrice = outbound.Price + inbound.Price,
                     User = currentUser
                 };
 
@@ -315,6 +316,7 @@ namespace GUI
                 BookingDate = DateTime.Now,
                 OutboundFlight = flight,
                 ReturnFlight = null,
+                TotalPrice = flight.Price,
                 User = currentUser
             };
             try

@@ -10,7 +10,6 @@ using System.Windows;
 
 namespace GUI
 {
-    // UrlToImageConverter (same as before)
     public class UrlToImageConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
